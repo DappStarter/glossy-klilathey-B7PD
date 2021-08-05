@@ -1,3 +1,7 @@
+/*
+    Quest 3 : lines  102 - 117
+    Quest 4 : lines 80-91
+ */
 import FungibleToken from Flow.FungibleToken
 
 pub contract Kibble: FungibleToken {
@@ -62,7 +66,7 @@ pub contract Kibble: FungibleToken {
         init(balance: UFix64) {
             self.balance = balance
         }
-
+        
         // withdraw
         //
         // Function that takes an amount as an argument
@@ -75,13 +79,15 @@ pub contract Kibble: FungibleToken {
         //
         pub fun withdraw(amount: UFix64): @FungibleToken.Vault {
             // TODO: Delete the line below and implement this function
-            return <- create Vault(balance: 0.0)
 
-            // 1) Take away 'amount' balance from this Vault
+            // 1) Take away 'amount' balance from this Vault 
+            self.balance= self.balance - amount
 
             // 2) emit TokensWithdrawn
+            emit TokensWithdrawn(amount: amount, from: self.owner?.address)
             
             // 3) return a new Vault with balance == 'amount'
+            return <- create Vault(balance: amount)
         }
 
         // deposit
@@ -95,18 +101,19 @@ pub contract Kibble: FungibleToken {
         //
         pub fun deposit(from: @FungibleToken.Vault) {
             // TODO: Delete the line below and implement this function
-            destroy from
-
+           
             // 1) Convert 'from' from a @FungibleToken.Vault to a 
             // new variable called 'vault' of type @Kibble.Vault using 'as!'
-            
+            let vault <- from as! @Kibble.Vault
             // 2) Add the balance inside 'vault' to this Vault
-
+            self.balance = self.balance + vault.balance
             // 3) emit TokensDeposited
+            emit TokensDeposited(amount: vault.balance, to: self.owner?.address)
 
             // 4) Set 'vault's balance to 0.0
-
+            vault.balance = 0.0
             // 4) destroy 'vault'
+            destroy vault
         }
 
         destroy() {
@@ -141,15 +148,19 @@ pub contract Kibble: FungibleToken {
         //
         pub fun mintTokens(amount: UFix64): @Kibble.Vault {
             // TODO: Delete the line below and implement this function
-            return <-create Vault(balance: 0.0)
 
             // 1) Add a pre-condition to make sure 'amount' is greater than 0.0
-        
+            pre {
+                amount > 0.0: "Amount is invalid. Must be greater than 0"
+            }
             // 2) Update Kibble.totalSupply by adding 'amount'
+            Kibble.totalSupply = Kibble.totalSupply + amount
             
             // 3) emit TokensMinted
+            emit TokensMinted(amount: amount)
 
             // 4) return a Vault with balance == 'amount'
+            return <-create Vault(balance: amount)
         }
 
         init() {
@@ -175,3 +186,4 @@ pub contract Kibble: FungibleToken {
         emit TokensInitialized(initialSupply: self.totalSupply)
     }
 }
+
