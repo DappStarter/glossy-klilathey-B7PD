@@ -9,6 +9,8 @@ module.exports = class DappTransactions {
 
 	static kibble_mint_tokens() {
 		return fcl.transaction`
+				//NOTES: importing with dappstarter
+				// import ContractName from Flow.Blah Blah -> dapp-config.json
 				import FungibleToken from 0xee82856bf20e2aa6
 				import Kibble from 0x01cf0e2f2f715450
 				
@@ -117,7 +119,8 @@ module.exports = class DappTransactions {
 		return fcl.transaction`
 				// TODO: 
 				// Add imports here, then do steps 1, 2, and 3.
-				
+				import KittyItems from 0x01cf0e2f2f715450
+				import NonFungibleToken from 0x01cf0e2f2f715450
 				// This transction uses the NFTMinter resource to mint a new NFT.
 				//
 				// It must be signed by the account that has the minter resource
@@ -133,14 +136,18 @@ module.exports = class DappTransactions {
 				    prepare(signer: AuthAccount) {
 				
 				        // 1) borrow a reference to the NFTMinter resource in the signer's storage
-				        
+				        self.minter = signer.borrow<&KittyItems.NFTMinter>(from: KittyItems.MinterStoragePath)
+				                      ?? panic("Could not borrow Owner's Kitty Items Collection Reference")
 				        // 2) borrow a public reference to the recipient's Kitty Items Collection
-				        
-				    }
+				        self.receiver = getAccount(recipient).getCapability(KittyItems.CollectionPublicPath)
+				                        .borrow<&{NonFungibleToken.CollectionPublic}>()
+				                        ?? panic("Could not borrow Recipient's Kitty Items Collection Reference")
+				    }           
 				
 				    execute {
 				
 				        // 3) mint the NFT and deposit it into the recipient's Collection
+				        self.minter.mint(recipient: self.receiver, typeID: typeID)
 				        
 				    }
 				}
@@ -177,7 +184,8 @@ module.exports = class DappTransactions {
 		return fcl.transaction`
 				// TODO:
 				// Add imports here, then do steps 1, 2, 3, and 4.
-				
+				import KittyItems from 0x01cf0e2f2f715450
+				import NonFungibleToken from 0x01cf0e2f2f715450
 				// This transaction transfers a Kitty Item from one account to another.
 				
 				transaction(recipient: Address, withdrawID: UInt64) {
@@ -190,17 +198,22 @@ module.exports = class DappTransactions {
 				    prepare(signer: AuthAccount) {
 				
 				        // 1) borrow a reference to the signer's Kitty Items Collection
-				
+				        self.signerCollectionRef = signer.borrow<&KittyItems.Collection>
+				                                   (from: KittyItems.CollectionStoragePath)
+				                                   ?? panic("Could not borrow Owner's Kitty Items Collection Reference")
 				        // 2) borrow a public reference to the recipient's Kitty Items Collection
+				        self.receiverCollectionRef= getAccount(recipient).getCapability(KittyItems.CollectionPublicPath)
+				                                    .borrow<&{NonFungibleToken.CollectionPublic}>()
+				                                    ?? panic("Could not borrow Recipient's Kitty Items Collection Reference")
 				
 				    }
 				
 				    execute {
 				
 				        // 3) withdraw the Kitty Item from the signer's Collection
-				
+				        let nft <-self.signerCollectionRef.withdraw(withdrawID: withdrawID)
 				        // 4) deposit the Kitty Item into the recipient's Collection
-				       
+				        self.receiverCollectionRef.deposit(token: <-nft)
 				    }
 				}
 		`;

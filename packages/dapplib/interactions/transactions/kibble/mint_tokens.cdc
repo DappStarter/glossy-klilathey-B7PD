@@ -1,3 +1,5 @@
+//NOTES: importing with dappstarter
+// import ContractName from Flow.Blah Blah -> dapp-config.json
 import FungibleToken from Flow.FungibleToken
 import Kibble from Project.Kibble
 
