@@ -229,10 +229,10 @@ module.exports = class DappLib {
   //
 
   static async kittyItemsMintKittyItem(data) {
-    console.log(data);
+    let config = DappLib.getConfig();
     let result = await Blockchain.post(
       {
-        config: DappLib.getConfig(),
+        config: config,
         roles: {
           proposer: config.accounts[0],
         },
@@ -269,10 +269,11 @@ module.exports = class DappLib {
       },
       "kittyitems_transfer_kitty_item",
       {
-        recipient: { recipient: data.recipient, typed: t.Address },
-        withdrawId: { withdrawId: parseInt(data.withdrawId), type: t.UInt64 },
+        recipient: { value: data.recipient, type: t.Address },
+        withdrawID: { value: parseInt(data.withdrawID), type: t.UInt64 },
       }
     );
+
     return {
       type: DappLib.DAPP_RESULT_TX_HASH,
       label: "Transaction Hash",
@@ -299,13 +300,14 @@ module.exports = class DappLib {
       },
       "kittyitems_read_collection_ids",
       {
-        address: { address: data.address, type: t.address },
+        address: { value: data.address, type: t.Address },
       }
     );
+
     return {
-      type: DappLib.DAPP_RESULT_ARRAY, //any number -> BN
+      type: DappLib.DAPP_RESULT_ARRAY,
       label: "Kitty Items Collection IDs",
-      result: result.callData, //always gonna be result.callData
+      result: result.callData,
     };
   }
 

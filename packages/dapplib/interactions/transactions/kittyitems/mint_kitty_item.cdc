@@ -28,7 +28,7 @@ transaction(recipient: Address, typeID: UInt64) {
     execute {
 
         // 3) mint the NFT and deposit it into the recipient's Collection
-        self.minter.mint(recipient: self.receiver, typeID: typeID)
+        self.minter.mintNFT(recipient: self.receiver, typeID: typeID)
         
     }
 }

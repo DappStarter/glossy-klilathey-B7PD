@@ -7,7 +7,7 @@ import NonFungibleToken from Flow.NonFungibleToken
 pub fun main(address: Address): [UInt64] {
 
     // 1) Get a public reference to the address' public Kitty Items Collection
-    let KittyCollectionRef = getAccount(address).getCapability(KittyItems.Collection)
+    let KittyCollectionRef = getAccount(address).getCapability(KittyItems.CollectionPublicPath)
                             .borrow<&{NonFungibleToken.CollectionPublic}>()
                             ?? panic("Could not borrow Kitty Items Collection Reference")
     // 2) Return the Collection's IDs 
