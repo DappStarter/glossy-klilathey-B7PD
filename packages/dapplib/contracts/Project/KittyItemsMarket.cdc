@@ -30,6 +30,7 @@ pub contract KittyItemsMarket {
     //
     pub resource interface SalePublic {
         pub fun purchase(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic}, buyTokens: @FungibleToken.Vault)
+        pub fun checkTradeCollection(itemID: UInt64, tradeCollection : &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}) : Bool
         pub fun idPrice(itemID: UInt64): UFix64?
         pub fun getIDs(): [UInt64]
     }
@@ -94,6 +95,10 @@ pub contract KittyItemsMarket {
 
                 emit ForSale(itemID: itemID, price: price)
             }
+        }
+
+        pub fun checkTradeCollection(itemID: itemID, tradeCollection : &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}) : Bool {
+            return tradeCollection.getIDs().contains(itemID);
         }
 
         // purchase
