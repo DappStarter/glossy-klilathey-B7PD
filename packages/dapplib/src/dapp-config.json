@@ -8,7 +8,8 @@
 		"Flow.FungibleToken": "0xee82856bf20e2aa6",
 		"Flow.NonFungibleToken": "0x01cf0e2f2f715450",
 		"Project.Kibble": "0x01cf0e2f2f715450",
-		"Project.KittyItems": "0x01cf0e2f2f715450"
+		"Project.KittyItems": "0x01cf0e2f2f715450",
+		"Project.KittyItemsMarket": "0x01cf0e2f2f715450"
 	},
 	"accounts": [
 		"0x01cf0e2f2f715450",

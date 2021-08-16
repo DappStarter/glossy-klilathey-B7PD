@@ -114,7 +114,7 @@ pub contract KittyItemsMarket {
             }
         }
 
-        pub fun checkTradeCollection(itemID: itemID, tradeCollection : &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}) : Bool {
+        pub fun checkTradeCollection(itemID: UInt64, tradeCollection : &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}) : Bool {
             return tradeCollection.getIDs().contains(itemID);
         }
 
@@ -169,6 +169,11 @@ pub contract KittyItemsMarket {
         }
     }
     
+        pub resource interface TradePublic{
+        pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic})
+        pub fun checkSaleCollection(itemID: UInt64, saleCollection : &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}) : Bool
+        pub fun getIDs() : [UInt64]
+    }
         pub resource TradeCollection : TradePublic {
         
         //dictionaty of items for trade + their price
@@ -199,9 +204,12 @@ pub contract KittyItemsMarket {
             }
         }
 
+        pub fun checkSaleCollection(itemID: UInt64, saleCollection : &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}) : Bool {
+            return saleCollection.getIDs().contains(itemID);
+        }
+
         pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic}) {
             pre {
-                
                 self.forTrade[itemID] != nil:
                     "No NFT matching this itemID for trade!"
             }
@@ -244,5 +252,7 @@ pub contract KittyItemsMarket {
         // Set our named paths
         self.MarketStoragePath = /storage/marketSaleCollection
         self.MarketPublicPath = /public/marketSaleCollection
+        self.MarketTradePath = /storage/marketTradeCollection
+        self.MarketPublicTradePath = /public/marketTradeCollection
     }
 }
