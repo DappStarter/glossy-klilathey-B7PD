@@ -205,7 +205,7 @@ pub contract KittyItemsMarket {
         }
 
         pub fun checkSaleCollection(itemID: UInt64, saleCollection : &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}) : Bool {
-            return saleCollection.getIDs().contains(itemID);
+            return (!saleCollection.getIDs().contains(itemID));
         }
 
         pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic}) {

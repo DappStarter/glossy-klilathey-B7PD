@@ -161,4 +161,24 @@ module.exports = class DappScripts {
 		`;
 	}
 
+	static kittyitemsmarket_read_trade_collection() {
+		return fcl.script`
+				import KittyItemsMarket from 0x01cf0e2f2f715450
+				
+				// This script returns an array of all the NFT IDs for trade 
+				// in an account's TradeCollection.
+				
+				pub fun main(tradeCollectionAddress: Address): [UInt64] {
+				    let tradeCollectionRef = getAccount(tradeCollectionAddress)
+				        .getCapability<&KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}>(
+				            KittyItemsMarket.MarketPublicTradePath
+				        )
+				        .borrow()
+				        ?? panic("Could not borrow market trade collection from trade address")
+				    
+				    return tradeCollectionRef.getIDs()
+				}
+		`;
+	}
+
 }
