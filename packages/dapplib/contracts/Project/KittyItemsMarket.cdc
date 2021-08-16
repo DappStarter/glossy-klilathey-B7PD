@@ -15,11 +15,28 @@ pub contract KittyItemsMarket {
     // Event that is emitted when a seller withdraws their NFT from the sale
     //
     pub event SaleWithdrawn(itemID: UInt64)
+        /*********************** W2Q8  ***********************/
+    //Even that is emitted when a seller trades an NFT with another user
+    pub event NFTsTraded(itemID: UInt64, price: UFix64);
+    
+    // Event that is emitted when a seller withdraws their NFT from the trade
+    //
+    pub event TradeWithdrawn(itemID: UInt64)
 
+    // Event that is emitted when a new NFT is put up for trade
+    //
+    pub event ForTrade(itemID: UInt64)
+    
+
+    /*********************** END - W2Q8 Events  ***********************/
+    
     // Named Paths
     //
     pub let MarketStoragePath: StoragePath
+    pub let MarketTradePath : StoragePath
     pub let MarketPublicPath: PublicPath
+    pub let MarketPublicTradePath : PublicPath
+
 
     // SalePublic
     // Interface that users will publish for their SaleCollection
