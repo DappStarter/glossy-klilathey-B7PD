@@ -151,6 +151,70 @@ pub contract KittyItemsMarket {
             return self.forSale.keys
         }
     }
+    
+        pub resource TradeCollection : TradePublic {
+        
+        //dictionaty of items for trade + their price
+        pub var forTrade : {UInt64 : UFix64}
+
+        // The owner's Kitty Items Collection that we will withdraw from when a user trades an NFT.
+        access(self) let ownerCollection: Capability<&KittyItems.Collection>
+
+        init (_collection: Capability<&KittyItems.Collection>) {
+            self.forTrade = {}
+            self.ownerCollection = _collection
+        }
+
+        pub fun unlistTrade(itemID: UInt64) {
+             self.forTrade[itemID] = nil
+
+            emit TradeWithdrawn(itemID: itemID)
+        }
+
+        pub fun listForTrade(itemID: UInt64, price: UFix64) {
+            var ownedNFTs = self.ownerCollection.borrow()!.getIDs()
+            
+            if (ownedNFTs.contains(itemID)) {
+                // store the price in the price array
+                self.forTrade[itemID] = price
+
+                emit ForTrade(itemID: itemID)
+            }
+        }
+
+        pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic}) {
+            pre {
+                
+                self.forTrade[itemID] != nil:
+                    "No NFT matching this itemID for trade!"
+            }
+            let price = self.forTrade[itemID]!
+
+            // remove the NFT from the owner's NFT Collection
+            let token <- self.ownerCollection.borrow()!.withdraw(withdrawID: itemID)
+
+            // deposit the NFT into the buyers NFT Collection
+            recipient.deposit(token: <-token)
+
+            // unlist the sale
+            self.unlistTrade(itemID: itemID)
+
+            emit NFTsTraded(itemID: itemID, price: price)
+        }
+
+
+        pub fun getIDs(): [UInt64] {
+            return self.forTrade.keys
+        }
+
+    }
+
+    // createTradeCollection
+    // createCollection returns a new TradeCollection resource to the caller
+    //
+    pub fun createTradeCollection( ownerCollection: Capability<&KittyItems.Collection>): @TradeCollection {
+        return <- create TradeCollection(_collection: ownerCollection)
+    }
 
     // createSaleCollection
     // createCollection returns a new SaleCollection resource to the caller
