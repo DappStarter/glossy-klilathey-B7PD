@@ -302,7 +302,7 @@ export default class FastFlowardHarness extends LitElement {
           ></text-widget>
         </action-card>
         <action-card
-          title="DAY 5: Kitty Items Market Trade - Read Trade Collection IDs with their prices"
+          title="DAY 5: Kitty Items Market Trade - Read Trade Collection IDs"
           description="Read Trade Collection IDs"
           action="kittyItemsMarketReadTradeCollectionIDs"
           method="get"
@@ -313,16 +313,32 @@ export default class FastFlowardHarness extends LitElement {
             label="Marketplace Trade Collection Address"
           ></account-widget>
         </action-card>
+
+        <action-card
+          title="DAY 5: Kitty Items Market - Remove Market Item for Trade"
+          description="Remove a Kitty Item from the Trading listings"
+          action="kittyItemsMarketRemoveTradeItem"
+          method="post"
+          fields="signer itemID"
+        >
+          <account-widget field="signer" label="Signer"> </account-widget>
+          <text-widget
+            field="itemID"
+            label="Item ID"
+            placeholder="0"
+          ></text-widget>
+        </action-card>
+
         <action-card
           title="DAY 5: Kitty Items Market Trade- Trade Market Item"
           description="Trade Kitty Items from the Marketplace"
           action="kittyItemsMarketTradeItem"
           method="post"
-          fields="signer itemID marketCollectionAddress itemTradeID"
+          fields="signer itemID marketCollectionAddress itemSignerID"
         >
           <account-widget field="signer" label="Signer"> </account-widget>
           <text-widget
-            field="itemTradeID"
+            field="itemSignerID"
             label="Item Trade ID"
             placeholder="0"
           ></text-widget>
@@ -336,6 +352,16 @@ export default class FastFlowardHarness extends LitElement {
             label="Item ID"
             placeholder="0"
           ></text-widget>
+        </action-card>
+
+        <action-card
+          title="DAY 3: Kitty Items - Read Collection IDs"
+          description="Read the NFT IDs in this Collection"
+          action="kittyItemsReadCollectionIDs"
+          method="get"
+          fields="address"
+        >
+          <account-widget field="address" label="Address"> </account-widget>
         </action-card>
       </page-body>
       <page-panel id="resultPanel"></page-panel>

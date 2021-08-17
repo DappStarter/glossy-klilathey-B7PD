@@ -331,6 +331,33 @@ module.exports = class DappTransactions {
 		`;
 	}
 
+	static kittyitemsmarket_remove_trade_item() {
+		return fcl.transaction`
+				import KittyItemsMarket from 0x01cf0e2f2f715450
+				
+				// Allows a TradeCollection owner to remove a Kitty Item for trade
+				
+				transaction(itemID: UInt64) {
+				
+				  let tradeCollection: &KittyItemsMarket.TradeCollection
+				
+				  prepare(signer: AuthAccount) {
+				      // Borrows the signer's TradeCollection
+				      self.tradeCollection = signer.borrow<&KittyItemsMarket.TradeCollection>(from: KittyItemsMarket.MarketTradePath) 
+				          ?? panic("Could not borrow the signer's TradeCollection")
+				  }
+				
+				  execute {
+				      // Unlist Kitty Items from trade
+				      self.tradeCollection.unlistTrade(itemID: itemID)
+				
+				      log("Unlisted Kitty Item for trade")
+				  }
+				}
+				
+		`;
+	}
+
 	static kittyitemsmarket_sell_market_item() {
 		return fcl.transaction`
 				import KittyItemsMarket from 0x01cf0e2f2f715450
@@ -341,16 +368,21 @@ module.exports = class DappTransactions {
 				transaction(itemID: UInt64, price: UFix64) {
 				
 				  let saleCollection: &KittyItemsMarket.SaleCollection
+				    let tradeCollection: &KittyItemsMarket.TradeCollection
 				
 				  prepare(signer: AuthAccount) {
 				      // Borrows the signer's SaleCollection
 				      self.saleCollection = signer.borrow<&KittyItemsMarket.SaleCollection>(from: KittyItemsMarket.MarketStoragePath) 
 				          ?? panic("Could not borrow the SaleCollection")
+				
+				      self.tradeCollection = signer.borrow<&KittyItemsMarket.TradeCollection>(from: KittyItemsMarket.MarketTradePath) 
+				          ?? panic("Could not borrow the TradeCollection")
+				
 				  }
 				
 				  execute {
 				      // Lists Packs for sale
-				      self.saleCollection.listForSale(itemID: itemID, price: price)
+				      self.saleCollection.listForSale(itemID: itemID, price: price, tradeCollection: self.tradeCollection)
 				
 				      log("Listed Kitty Items for sale")
 				  }

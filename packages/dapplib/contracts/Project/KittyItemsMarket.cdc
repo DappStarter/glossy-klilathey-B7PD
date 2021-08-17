@@ -98,8 +98,11 @@ pub contract KittyItemsMarket {
         // listForSale
         // listForSale lists Kitty Items for sale
         //
-        pub fun listForSale(itemID: UInt64, price: UFix64) {
+        //W2Q8 - added a check if its listed for trade
+        pub fun listForSale(itemID: UInt64, price: UFix64, tradeCollection : &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}) {
             pre {
+                !(tradeCollection.getIDs().contains(itemID)):
+                    "This NFT is listed for Trade. Cannot list for Sale"
                 price > 0.0:
                     "Cannot list a NFT for 0.0"
             }
@@ -208,7 +211,7 @@ pub contract KittyItemsMarket {
         pub fun unlistTrade(itemID: UInt64) {
             var counter : Int = 0;
             for items in self.forTrade {
-                
+
                 if(items == itemID){
                     self.forTrade.remove(at: counter)
                 }
@@ -237,7 +240,7 @@ pub contract KittyItemsMarket {
         //lets a user send their NFT they are trading to the other trader
         pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic}) {
             pre {
-                self.forTrade.contains(itemID) == false:
+                (self.forTrade.contains(itemID)):
                     "No NFT matching this itemID for trade!"
             }
 

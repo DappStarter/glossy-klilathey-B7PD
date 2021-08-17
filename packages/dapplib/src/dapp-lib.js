@@ -595,6 +595,31 @@ module.exports = class DappLib {
     };
   }
 
+  // kittyItemsMarketRemoveTradeItem
+  // calls transactions/kittyitemsmarket/remove_trade_item.cdc
+  //
+  // signer/proposer/authorizer: data.signer
+  //
+  static async kittyItemsMarketRemoveTradeItem(data) {
+    let result = await Blockchain.post(
+      {
+        config: DappLib.getConfig(),
+        roles: {
+          proposer: data.signer,
+        },
+      },
+      "kittyitemsmarket_remove_trade_item",
+      {
+        itemID: { value: parseInt(data.itemID), type: t.UInt64 },
+      }
+    );
+
+    return {
+      type: DappLib.DAPP_RESULT_TX_HASH,
+      label: "Transaction Hash",
+      result: result.callData.transactionId,
+    };
+  }
   // kittyItemsMarketTradeItem
   // calls transactions/kittyitemsmarket/trade_items.cdc
   //
@@ -615,7 +640,7 @@ module.exports = class DappLib {
           value: data.marketCollectionAddress,
           type: t.Address,
         },
-        itemTradeID: { value: parseInt(data.itemTradeID), type: t.UInt64 },
+        itemSignerID: { value: parseInt(data.itemSignerID), type: t.UInt64 },
       }
     );
     return {
