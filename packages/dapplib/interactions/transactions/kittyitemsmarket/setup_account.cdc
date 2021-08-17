@@ -30,7 +30,6 @@ transaction() {
       let ownerKittyItemsCollection = signer.getCapability<&KittyItems.Collection>(/private/privateKittyItemsCollection)
       assert(ownerKittyItemsCollection.borrow() != nil, message: "Missing or mis-typed Kitty Items Collection")
 
-      
       // create a new empty collection
       let saleCollection <- KittyItemsMarket.createSaleCollection(ownerVault: ownerKibbleVault, ownerCollection: ownerKittyItemsCollection)
             
@@ -41,6 +40,18 @@ transaction() {
       signer.link<&KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}>(KittyItemsMarket.MarketPublicPath, target: KittyItemsMarket.MarketStoragePath)
     
       log("Gave account a sale collection")
+
+
+      // create a new empty collection
+      let tradeCollection <- KittyItemsMarket.createTradeCollection(ownerCollection: ownerKittyItemsCollection)
+            
+      // save it to the account
+      signer.save(<-tradeCollection, to: KittyItemsMarket.MarketTradePath)
+
+      // create a public capability for the collection
+      signer.link<&KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}>(KittyItemsMarket.MarketPublicTradePath, target: KittyItemsMarket.MarketTradePath)
+    
+      log("Gave account a trade collection")
     }
   }
 }

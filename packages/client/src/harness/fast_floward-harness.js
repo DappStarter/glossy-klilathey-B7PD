@@ -285,6 +285,58 @@ export default class FastFlowardHarness extends LitElement {
           >
           </account-widget>
         </action-card>
+
+        <!-- DAY 5 -->
+        <action-card
+          title="DAY 5: Kitty Items Market Trade- List Trade Market Item"
+          description="Place a Kitty for Trade on Marketplace"
+          action="kittyItemsMarketListTradeMarketItem"
+          method="post"
+          fields="signer itemID"
+        >
+          <account-widget field="signer" label="Signer"> </account-widget>
+          <text-widget
+            field="itemID"
+            label="Item ID"
+            placeholder="0"
+          ></text-widget>
+        </action-card>
+        <action-card
+          title="DAY 5: Kitty Items Market Trade - Read Trade Collection IDs with their prices"
+          description="Read Trade Collection IDs"
+          action="kittyItemsMarketReadTradeCollectionIDs"
+          method="get"
+          fields="tradeCollectionAddress"
+        >
+          <account-widget
+            field="tradeCollectionAddress"
+            label="Marketplace Trade Collection Address"
+          ></account-widget>
+        </action-card>
+        <action-card
+          title="DAY 5: Kitty Items Market Trade- Trade Market Item"
+          description="Trade Kitty Items from the Marketplace"
+          action="kittyItemsMarketTradeItem"
+          method="post"
+          fields="signer itemID marketCollectionAddress itemTradeID"
+        >
+          <account-widget field="signer" label="Signer"> </account-widget>
+          <text-widget
+            field="itemTradeID"
+            label="Item Trade ID"
+            placeholder="0"
+          ></text-widget>
+          <account-widget
+            field="marketCollectionAddress"
+            label="Marketplace Collection Address"
+          ></account-widget>
+
+          <text-widget
+            field="itemID"
+            label="Item ID"
+            placeholder="0"
+          ></text-widget>
+        </action-card>
       </page-body>
       <page-panel id="resultPanel"></page-panel>
     `;

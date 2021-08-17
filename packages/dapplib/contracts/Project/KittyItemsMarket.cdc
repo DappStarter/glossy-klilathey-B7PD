@@ -15,9 +15,9 @@ pub contract KittyItemsMarket {
     // Event that is emitted when a seller withdraws their NFT from the sale
     //
     pub event SaleWithdrawn(itemID: UInt64)
-        /*********************** W2Q8  ***********************/
+    /*********************** W2Q8  ***********************/
     //Even that is emitted when a seller trades an NFT with another user
-    pub event NFTsTraded(itemID: UInt64, price: UFix64);
+    pub event NFTsTraded(itemID: UInt64);
     
     // Event that is emitted when a seller withdraws their NFT from the trade
     //
@@ -168,68 +168,94 @@ pub contract KittyItemsMarket {
             return self.forSale.keys
         }
     }
+
+        /*********************** W2Q8  ***********************/
+        /* TradePublic
+        Interface that users will publish for their TradeCollection
+        exposes the methods that are supposed to be public
     
+        The public can trade their NFT from an NFT from this TradeCollection
+        get all the ids of all the NFT listed for trade
+        */
         pub resource interface TradePublic{
         pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic})
-        pub fun checkSaleCollection(itemID: UInt64, saleCollection : &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}) : Bool
         pub fun getIDs() : [UInt64]
-    }
+        }
+
+
+        /* TradeCollection
+        
+        A Collection that acts as a trading marketplace for NFTs. 
+        
+        Other users can also trade NFTs that are listed
+        TradeCollection:  check all item IDs that are listed for trade
+
+        */
         pub resource TradeCollection : TradePublic {
         
-        //dictionaty of items for trade + their price
-        pub var forTrade : {UInt64 : UFix64}
+        //itemIDs array for trade
+        pub var forTrade : [UInt64]
 
         // The owner's Kitty Items Collection that we will withdraw from when a user trades an NFT.
         access(self) let ownerCollection: Capability<&KittyItems.Collection>
 
         init (_collection: Capability<&KittyItems.Collection>) {
-            self.forTrade = {}
+            self.forTrade = []
             self.ownerCollection = _collection
         }
 
+        //unlists Trade from the Trade Collection 
         pub fun unlistTrade(itemID: UInt64) {
-             self.forTrade[itemID] = nil
+            var counter : Int = 0;
+            for items in self.forTrade {
+                
+                if(items == itemID){
+                    self.forTrade.remove(at: counter)
+                }
+                counter = counter + 1
+            }
 
             emit TradeWithdrawn(itemID: itemID)
-        }
+        } 
 
-        pub fun listForTrade(itemID: UInt64, price: UFix64) {
+        //lists an NFT for trade 
+        pub fun listForTrade(itemID: UInt64, saleCollection : &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}) {
+            pre{
+                !(saleCollection.getIDs().contains(itemID)):
+                    "This NFT is listed for Sale. Cannot list for Trade"
+            }
             var ownedNFTs = self.ownerCollection.borrow()!.getIDs()
             
             if (ownedNFTs.contains(itemID)) {
-                // store the price in the price array
-                self.forTrade[itemID] = price
+                // store the itemID in the forTrade array
+                self.forTrade.append(itemID)
 
                 emit ForTrade(itemID: itemID)
             }
         }
-
-        pub fun checkSaleCollection(itemID: UInt64, saleCollection : &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}) : Bool {
-            return (!saleCollection.getIDs().contains(itemID));
-        }
-
+        
+        //lets a user send their NFT they are trading to the other trader
         pub fun trade(itemID: UInt64, recipient: &KittyItems.Collection{NonFungibleToken.CollectionPublic}) {
             pre {
-                self.forTrade[itemID] != nil:
+                self.forTrade.contains(itemID) == false:
                     "No NFT matching this itemID for trade!"
             }
-            let price = self.forTrade[itemID]!
 
             // remove the NFT from the owner's NFT Collection
             let token <- self.ownerCollection.borrow()!.withdraw(withdrawID: itemID)
 
-            // deposit the NFT into the buyers NFT Collection
+            // deposit the NFT into the trader's NFT Collection
             recipient.deposit(token: <-token)
 
             // unlist the sale
             self.unlistTrade(itemID: itemID)
 
-            emit NFTsTraded(itemID: itemID, price: price)
+            emit NFTsTraded(itemID: itemID)
         }
 
-
+        // getIDs returns an array of all the NFT IDs that are up for trade
         pub fun getIDs(): [UInt64] {
-            return self.forTrade.keys
+            return self.forTrade
         }
 
     }
@@ -240,6 +266,8 @@ pub contract KittyItemsMarket {
     pub fun createTradeCollection( ownerCollection: Capability<&KittyItems.Collection>): @TradeCollection {
         return <- create TradeCollection(_collection: ownerCollection)
     }
+
+    /*********************** END W2Q8  ***********************/
 
     // createSaleCollection
     // createCollection returns a new SaleCollection resource to the caller

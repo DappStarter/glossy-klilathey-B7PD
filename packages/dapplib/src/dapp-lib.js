@@ -541,7 +541,91 @@ module.exports = class DappLib {
       result: result.callData,
     };
   }
+  /**************************** W2Q8 ****************************/
+  // kittyItemsMarketListTradeMarketItem
+  // calls transactions/kittyitemsmarket/list_trade_item.cdc
+  //
+  // signer/proposer/authorizer: data.signer
+  //
+  static async kittyItemsMarketListTradeMarketItem(data) {
+    let result = await Blockchain.post(
+      {
+        config: DappLib.getConfig(),
+        roles: {
+          proposer: data.signer,
+        },
+      },
+      "kittyitemsmarket_list_trade_item",
+      {
+        itemID: { value: parseInt(data.itemID), type: t.UInt64 },
+      }
+    );
 
+    return {
+      type: DappLib.DAPP_RESULT_TX_HASH,
+      label: "Transaction Hash",
+      result: result.callData.transactionId,
+    };
+  }
+
+  // kittyItemsMarketReadTradeCollectionIDs
+  // calls scripts/kittyitemsmarket/read_trade_collection.cdc
+  //
+  // signer/proposer/authorizer: none
+  //
+  static async kittyItemsMarketReadTradeCollectionIDs(data) {
+    let result = await Blockchain.get(
+      {
+        config: DappLib.getConfig(),
+        roles: {},
+      },
+      "kittyitemsmarket_read_trade_collection",
+      {
+        tradeCollectionAddress: {
+          value: data.tradeCollectionAddress,
+          type: t.Address,
+        },
+      }
+    );
+
+    return {
+      type: DappLib.DAPP_RESULT_ARRAY,
+      label: "Market Trade Collection IDs",
+      result: result.callData,
+    };
+  }
+
+  // kittyItemsMarketTradeItem
+  // calls transactions/kittyitemsmarket/trade_items.cdc
+  //
+  // signer/proposer/authorizer: data.signer
+  //
+  static async kittyItemsMarketTradeItem(data) {
+    let result = await Blockchain.post(
+      {
+        config: DappLib.getConfig(),
+        roles: {
+          proposer: data.signer,
+        },
+      },
+      "kittyitemsmarket_trade_items",
+      {
+        itemID: { value: parseInt(data.itemID), type: t.UInt64 },
+        marketCollectionAddress: {
+          value: data.marketCollectionAddress,
+          type: t.Address,
+        },
+        itemTradeID: { value: parseInt(data.itemTradeID), type: t.UInt64 },
+      }
+    );
+    return {
+      type: DappLib.DAPP_RESULT_TX_HASH,
+      label: "Transaction Hash",
+      result: result.callData.transactionId,
+    };
+  }
+
+  /**************************** END W2Q8 ****************************/
   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DAPP LIBRARY  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
   static get DAPP_STATE_CONTRACT() {

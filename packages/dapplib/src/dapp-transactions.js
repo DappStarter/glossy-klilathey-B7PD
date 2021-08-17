@@ -277,19 +277,24 @@ module.exports = class DappTransactions {
 				// This transaction allows the signer to list a Kitty Item for trade
 				// from their Kitty Items Collection
 				
-				transaction(itemID: UInt64, price: UFix64) {
-				
+				transaction(itemID: UInt64) {
+				  let saleCollection: &KittyItemsMarket.SaleCollection
 				  let tradeCollection: &KittyItemsMarket.TradeCollection
 				
 				  prepare(signer: AuthAccount) {
 				      // Borrows the signer's SaleCollection
+				        self.saleCollection = signer.borrow<&KittyItemsMarket.SaleCollection>(from: KittyItemsMarket.MarketStoragePath) 
+				          ?? panic("Could not borrow the SaleCollection")
+				
 				      self.tradeCollection = signer.borrow<&KittyItemsMarket.TradeCollection>(from: KittyItemsMarket.MarketTradePath) 
 				          ?? panic("Could not borrow the TradeCollection")
+				
+				
 				  }
 				
 				  execute {
 				      // Lists Packs for sale
-				      self.tradeCollection.listForTrade(itemID: itemID, price: price)
+				      self.tradeCollection.listForTrade(itemID: itemID, saleCollection:self.saleCollection )
 				
 				      log("Listed Kitty Item for trade")
 				  }
@@ -388,7 +393,6 @@ module.exports = class DappTransactions {
 				      let ownerKittyItemsCollection = signer.getCapability<&KittyItems.Collection>(/private/privateKittyItemsCollection)
 				      assert(ownerKittyItemsCollection.borrow() != nil, message: "Missing or mis-typed Kitty Items Collection")
 				
-				      
 				      // create a new empty collection
 				      let saleCollection <- KittyItemsMarket.createSaleCollection(ownerVault: ownerKibbleVault, ownerCollection: ownerKittyItemsCollection)
 				            
@@ -399,6 +403,18 @@ module.exports = class DappTransactions {
 				      signer.link<&KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}>(KittyItemsMarket.MarketPublicPath, target: KittyItemsMarket.MarketStoragePath)
 				    
 				      log("Gave account a sale collection")
+				
+				
+				      // create a new empty collection
+				      let tradeCollection <- KittyItemsMarket.createTradeCollection(ownerCollection: ownerKittyItemsCollection)
+				            
+				      // save it to the account
+				      signer.save(<-tradeCollection, to: KittyItemsMarket.MarketTradePath)
+				
+				      // create a public capability for the collection
+				      signer.link<&KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}>(KittyItemsMarket.MarketPublicTradePath, target: KittyItemsMarket.MarketTradePath)
+				    
+				      log("Gave account a trade collection")
 				    }
 				  }
 				}
@@ -419,9 +435,7 @@ module.exports = class DappTransactions {
 				transaction(itemID: UInt64, marketCollectionAddress: Address, itemSignerID: UInt64) {
 				
 				    let marketTradeCollection: &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}
-				    let marketSaleCollection:  &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}
 				    let signerTradeCollection: &KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}
-				    let signerSaleCollection:  &KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}
 				
 				    let signerKittyItemsCollection: &KittyItems.Collection{NonFungibleToken.CollectionPublic}
 				    let marketKittyItemsCollection: &KittyItems.Collection{NonFungibleToken.CollectionPublic}
@@ -436,16 +450,6 @@ module.exports = class DappTransactions {
 				        self.signerTradeCollection = signer.getCapability(KittyItemsMarket.MarketPublicTradePath)
 				            .borrow<&KittyItemsMarket.TradeCollection{KittyItemsMarket.TradePublic}>()
 				            ?? panic("Could not borrow the Signer's Trade Collection")
-				        
-				
-				        self.marketSaleCollection = getAccount(marketCollectionAddress).getCapability(KittyItemsMarket.MarketPublicPath)
-				            .borrow<&KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}>()
-				            ?? panic("Could not borrow the Market Sale Collection")
-				
-				        self.signerSaleCollection = getAccount(marketCollectionAddress).getCapability(KittyItemsMarket.MarketPublicPath)
-				        .borrow<&KittyItemsMarket.SaleCollection{KittyItemsMarket.SalePublic}>()
-				        ?? panic("Could not borrow the Signer's Sale Collection")
-				
 				        
 				        
 				        //Borrow's the Kitty Items Collection of signer so we can deposit
@@ -462,10 +466,9 @@ module.exports = class DappTransactions {
 				    }
 				
 				    execute {
-				        if(self.marketTradeCollection.checkSaleCollection(itemID: itemID, saleCollection: self.marketSaleCollection) && self.signerTradeCollection.checkSaleCollection(itemID: itemID, saleCollection: self.signerSaleCollection)){
-				             self.marketTradeCollection.trade(itemID: itemID, recipient: self.signerKittyItemsCollection)
-				            self.signerTradeCollection.trade(itemID: itemSignerID, recipient: self.marketKittyItemsCollection)
-				        }
+				        self.marketTradeCollection.trade(itemID: itemID, recipient: self.signerKittyItemsCollection)
+				        self.signerTradeCollection.trade(itemID: itemSignerID, recipient: self.marketKittyItemsCollection)
+				
 				    }
 				}
 				
